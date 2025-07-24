@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator</title>
+  <link rel="stylesheet" href="style.css">
+  
+</head>
+<body>
+  <div class="calculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button class="clear" id="clear">C</button>
+      <button class="backspace" id="backspace">⌫</button>
+      <button class="operator" data-op="/">÷</button>
+      <button class="operator" data-op="*">×</button>
+      <button data-num="7">7</button>
+      <button data-num="8">8</button>
+      <button data-num="9">9</button>
+      <button class="operator" data-op="-">−</button>
+      <button data-num="4">4</button>
+      <button data-num="5">5</button>
+      <button data-num="6">6</button>
+      <button class="operator" data-op="+">+</button>
+      <button data-num="1">1</button>
+      <button data-num="2">2</button>
+      <button data-num="3">3</button> <br>
+      <button data-num="0">0</button>
+      <button data-num=".">.</button>
+      <button class="equals" id="equals">=</button>
+    </div>
+  </div>
+  <script>
+    const display = document.getElementById('display');
+    let current = '';
+    let operator = '';
+    let operand = '';
+    let resetNext = false;
+
+    function updateDisplay(val) {
+      display.textContent = val;
+    }
+
+    function appendNumber(num) {
+      if (resetNext) {
+        current = '';
+        resetNext = false;
+      }
+      if (num === '.' && current.includes('.')) return;
+      if (current === '0' && num !== '.') current = '';
+      current += num;
+      updateDisplay(current);
+    }
+
+    function setOperator(op) {
+      if (operator && !resetNext) {
+        calculate();
+      }
+      operand = current;
+      operator = op;
+      resetNext = true;
+    }
+
+    function calculate() {
+      let result = 0;
+      const a = parseFloat(operand);
+      const b = parseFloat(current);
+      if (isNaN(a) || isNaN(b)) return;
+      switch (operator) {
+        case '+': result = a + b; break;
+        case '-': result = a - b; break;
+        case '*': result = a * b; break;
+        case '/':
+          if (b === 0) {
+            updateDisplay('Error');
+            current = '';
+            operator = '';
+            operand = '';
+            resetNext = true;
+            return;
+          }
+          result = a / b; break;
+        default: return;
+      }
+      current = result.toString();
+      updateDisplay(current);
+      operator = '';
+      operand = '';
+      resetNext = true;
+    }
+
+    function clearAll() {
+      current = '';
+      operator = '';
+      operand = '';
+      resetNext = false;
+      updateDisplay('0');
+    }
+
+    function backspace() {
+      if (resetNext) {
+        current = '';
+        resetNext = false;
+        updateDisplay('0');
+        return;
+      }
+      current = current.slice(0, -1);
+      updateDisplay(current || '0');
+    }
+
+    document.querySelectorAll('[data-num]').forEach(btn => {
+      btn.addEventListener('click', () => appendNumber(btn.getAttribute('data-num')));
+    });
+    document.querySelectorAll('.operator').forEach(btn => {
+      btn.addEventListener('click', () => setOperator(btn.getAttribute('data-op')));
+    });
+    document.getElementById('equals').addEventListener('click', calculate);
+    document.getElementById('clear').addEventListener('click', clearAll);
+    document.getElementById('backspace').addEventListener('click', backspace);
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+      if ((e.key >= '0' && e.key <= '9') || e.key === '.') {
+        appendNumber(e.key);
+      } else if (['+', '-', '*', '/'].includes(e.key)) {
+        setOperator(e.key);
+      } else if (e.key === 'Enter' || e.key === '=') {
+        calculate();
+      } else if (e.key === 'Backspace') {
+        backspace();
+      } else if (e.key.toLowerCase() === 'c') {
+        clearAll();
+      }
+    });
+  </script>
+</body>
+</html>
